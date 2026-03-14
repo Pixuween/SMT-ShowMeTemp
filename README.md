@@ -1,110 +1,169 @@
-# SMT-ShowMeTemp
-Most monitoring tools are either too heavy (MSI Afterburner, HWiNFO) or too simple. ShowMeTemp sits in the middle — lightweight, always-on, no window cluttering your desktop. Two icons in your tray. One for CPU, one for GPU. That's it.
+# ShowMeTemp
 
-Features
-Live temperature display
-Color-coded icons update every 1.5s — white when cool, yellow when warm, red when hot.
-Smart alerts
-Sound + Windows toast notifications when temps spike, with component-specific advice. Built-in cooldown prevents notification spam.
-Hover tooltip
-Hover over any icon to see exact temperature + CPU/GPU usage %.
-Right-click menu
+**Real-time CPU & GPU temperature monitor — system tray, always on, zero bloat.**
 
-Current temperature (live)
-60-point history graph with threshold lines
-Settings — customize warn/critical thresholds, cooldown, refresh rate
-Mute alerts — 30 min / 1 hour / until restart
-Quit one or quit all
+![Version](https://img.shields.io/badge/version-21032026.1-black?style=flat-square)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+![Status](https://img.shields.io/badge/status-release-brightgreen?style=flat-square)
 
-Persistent config
-All settings saved to %APPDATA%\ShowMeTemp\config.json.
-Auto-language detection
-Detects your Windows language automatically.
-Supported: 🇫🇷 FR · 🇬🇧 EN · 🇪🇸 ES · 🇩🇪 DE · 🇮🇹 IT · 🇵🇹 PT
-Resilient
-Auto-resurrects if the tray icon disappears. Single-instance protection. Crash log on Desktop.
+</div>
+
+---
+
 
 Screenshots
+https://ibb.co/hJ69S64Y
+https://ibb.co/RkgJRP6r
+https://ibb.co/B5TBccJK
 
-Tray icons update in real time. White = normal, yellow = warm (≥65°C), red = critical (≥82°C).
+---
 
+## Installation
 
-Installation
-Option A — Installer (recommended)
-1. Run installer.bat as Administrator
-2. Accept the UAC prompt for LibreHardwareMonitor
-3. Go to Settings > Taskbar > Other system tray icons
-4. Enable "Python"
+Download `ShowMeTemp_Setup_21032026.1.exe` and run it.
 
-The installer handles Python dependencies, downloads LibreHardwareMonitor to C:\LHM\, sets up autostart, and copies the script to AppData so you can delete the source folder.
+The installer handles everything:
+- Installs ShowMeTemp
+- Bundles and configures LibreHardwareMonitor
+- Creates a Start Menu shortcut
+- Sets up autostart at Windows boot
 
-Option B — Run directly
-bashpip install pillow pystray psutil wmi pywin32
-python ShowMeTemp.py
+**No Python. No manual setup. No dependencies.**
 
-Requires LibreHardwareMonitor running in background for accurate readings.
+> Windows 10 / 11 only.
 
-Option C — Standalone EXE
-Build a single .exe with no Python dependency:
-bash# On Windows, run:
+---
+
+## First launch
+
+After installation, two icons appear in your system tray — one for CPU, one for GPU.
+
+If you don't see them, go to:
+```
+Settings > Personalization > Taskbar > Other system tray icons > enable Python
+```
+
+---
+
+## Usage
+
+| Action | Result |
+|---|---|
+| Glance at tray | Live temperature, color-coded |
+| Hover over icon | Exact temp + usage % |
+| Right-click | Full menu |
+
+**Color codes**
+
+| Color | Meaning |
+|---|---|
+| White | Normal |
+| Yellow | Warm (≥ 65°C) |
+| Red | Critical (≥ 82°C) |
+
+**Right-click menu**
+
+- Current temperature (live)
+- History — 60-point graph for that component
+- Settings — adjust thresholds, cooldown, refresh rate
+- Mute alerts — 30 min / 1 hour / until restart
+- Quit / Quit all
+
+---
+
+## Settings
+
+Access via right-click → Settings.
+
+| Option | Default | Description |
+|---|---|---|
+| Warning threshold | 65°C | Icon turns yellow above this |
+| Critical threshold | 82°C | Icon turns red, alert fires |
+| Alert cooldown | 60s | Minimum time between alerts |
+| Refresh rate | 1.5s | How often temps are read |
+| Show usage % | On | CPU/GPU load in tooltip |
+
+Settings are saved automatically to `%APPDATA%\ShowMeTemp\config.json`.
+
+---
+
+## Troubleshooting
+
+**Icons not visible in tray**
+Go to Settings → Personalization → Taskbar → Other system tray icons → enable **Python**
+
+**Temperature shows `--`**
+LibreHardwareMonitor needs to be running. It should start automatically — if not, launch it manually from `C:\LHM\LibreHardwareMonitor.exe` and accept the UAC prompt.
+
+**App crashed**
+Check `ShowMeTemp.log` on your Desktop for the full error log.
+
+**Already running message on launch**
+Another instance is already active. Check your system tray — the icons may be hidden.
+
+---
+
+## Uninstall
+
+Go to **Settings → Apps → ShowMeTemp → Uninstall**.
+
+Removes the app, autostart entry, and AppData config. LibreHardwareMonitor in `C:\LHM\` is left in place in case other apps use it — delete it manually if needed.
+
+---
+
+## Languages
+
+Detected automatically from your Windows language setting.
+
+🇫🇷 French &nbsp;·&nbsp; 🇬🇧 English &nbsp;·&nbsp; 🇪🇸 Spanish &nbsp;·&nbsp; 🇩🇪 German &nbsp;·&nbsp; 🇮🇹 Italian &nbsp;·&nbsp; 🇵🇹 Portuguese
+
+---
+
+## For developers — build from source
+
+```
+Requirements : Python 3.8+, Inno Setup 6
+```
+
+```bash
+# Clone the repo, then:
 build.bat
-# Output: dist\ShowMeTemp.exe
+```
 
-Requirements
-DependencyPurposepillowIcon renderingpystraySystem traypsutilCPU usage %wmi + pywin32LHM sensor accessGPUtilGPU fallbackLibreHardwareMonitorHardware sensor data
+The build script will:
+1. Install Python dependencies
+2. Download LibreHardwareMonitor
+3. Compile `ShowMeTemp.exe` with PyInstaller
+4. Package everything into `installer\ShowMeTemp_Setup_21032026.1.exe`
 
-How it works
-ShowMeTemp reads hardware sensors through LibreHardwareMonitor's WMI interface (root\LibreHardwareMonitor), which provides accurate temps for both AMD and Intel CPUs, and all major GPUs.
-Each tray icon runs in its own thread. Sensor reads are decoupled from the pystray message loop to prevent the icon from freezing or disappearing. WMI connections are cached per-thread to avoid COM object leaks.
-main()
- ├── CPU_tray thread  ──► pystray message loop
- │    └── CPU_sensors thread  ──► WMI reads every 1.5s
- └── GPU_tray thread  ──► pystray message loop
-      └── GPU_sensors thread  ──► WMI reads every 1.5s
+---
 
-Configuration
-Settings are stored in %APPDATA%\ShowMeTemp\config.json:
-json{
-  "warn_temp": 65,
-  "crit_temp": 82,
-  "alert_cooldown": 60,
-  "refresh_s": 1.5,
-  "show_usage": true
-}
-Edit via right-click → Settings, or directly in the JSON.
+## Stack
 
-Uninstall
-Run uninstaller.bat
-Removes autostart entry, LHM (optional), and all AppData files.
+`Python` &nbsp;·&nbsp; `pystray` &nbsp;·&nbsp; `Pillow` &nbsp;·&nbsp; `LibreHardwareMonitor` &nbsp;·&nbsp; `tkinter` &nbsp;·&nbsp; `PyInstaller` &nbsp;·&nbsp; `Inno Setup`
 
-Troubleshooting
-Icons not showing
-→ Windows Settings > Personalization > Taskbar > Other system tray icons > enable Python
-Temperature shows --
-→ Make sure LibreHardwareMonitor is running (tray icon visible). Try launching it as Administrator.
-Crash on startup
-→ Check ShowMeTemp.log on your Desktop for the full traceback.
+---
 
-Stack
-Python · pystray · Pillow · LibreHardwareMonitor (WMI) · tkinter · PyInstaller
+## Changelog
 
-Changelog
-v21032026.1
+### v21032026.1 — first public release
+- Plug & play installer (LHM bundled)
+- Multi-language support — FR / EN / ES / DE / IT / PT
+- Mute alerts mode — 30min / 1h / session
+- Quit all from either tray icon
+- Live temperature in right-click menu
+- 60-point history graph with threshold lines
+- Auto-resurrect if tray icon disappears
+- Single-instance protection
+- WMI connection cache — fixes crash on extended use
+- Persistent JSON config in AppData
+- AppUserModelID — proper taskbar icon
 
-Mute alerts mode (30min / 1h / session)
-Quit all from either tray menu
-Live temperature in right-click menu
-Auto-resurrect if tray icon disappears
-Multi-language support (FR/EN/ES/DE/IT/PT)
-Usage % in hover tooltip
-Persistent JSON config
-WMI connection cache — fixes crash after extended use
-Single-instance protection
-Fix: source folder unlocked after install
-Fix: Settings window crash
-Fix: duplicate sensor log entries
-
+---
 
 <div align="center">
-Made with ❤️ by Rebeu_Deep
+
+Made with ❤️ by **Rebeu_Deep**
+
 </div>
